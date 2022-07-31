@@ -155,7 +155,7 @@ const getBookByIdHandler = (request, h) => {
 };
 
 //* mengubah data buku
-const editBooksByIdHandler = (request, h) => {
+const editBookByIdHandler = (request, h) => {
   const {
     name,
     year,
@@ -228,9 +228,35 @@ const editBooksByIdHandler = (request, h) => {
   return response;
 };
 
+//* menghapus data buku berdasarkan id
+const deleteBookByIdHandler = (request, h) => {
+  const { bookId } = request.params;
+  const index = booksInDetail.findIndex((book) => book.id === bookId);
+  const criteria = index > -1;
+
+  // jika kriteria terpenuhi (terdapat buku dengan indeks yang dicari)
+  if (criteria) {
+    booksInDetail.splice(index, 1);
+    const response = h.response({
+      status: 'success',
+      message: 'Buku berhasil dihapus',
+    });
+    response.code(200);
+    return response;
+  }
+
+  const response = h.response({
+    status: 'fail',
+    message: 'Buku gagal dihapus. Id tidak ditemukan',
+  });
+  response.code(404);
+  return response;
+};
+
 module.exports = {
   storeBookHandler,
   getAllBooksHandler,
   getBookByIdHandler,
-  editBooksByIdHandler,
+  editBookByIdHandler,
+  deleteBookByIdHandler,
 };
