@@ -125,6 +125,7 @@ const getAllBooksHandler = (request, h) => {
     status: 'success',
     data: { books },
   });
+  response.code(200);
   return response;
 };
 
@@ -134,12 +135,14 @@ const getBookByIdHandler = (request, h) => {
   const book = booksInDetail.find((b) => b.id === bookId);
 
   if (book !== undefined) {
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         book,
       },
-    };
+    });
+    response.code(200);
+    return response;
   }
 
   // apabila buku tidak ditemukan
@@ -151,8 +154,83 @@ const getBookByIdHandler = (request, h) => {
   return response;
 };
 
+//* mengubah data buku
+const editBooksByIdHandler = (request, h) => {
+  const {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+  } = request.payload;
+  const { bookId } = request.params;
+  const index = booksInDetail.findIndex((book) => book.id === bookId);
+  const updatedAt = new Date().toISOString();
+
+  // membuat kriteria lolos uji
+  const firstCriteria = name !== undefined;
+  const secondCriteria = readPage <= pageCount;
+  const thirdCriteria = index > -1;
+
+  // apabila kriteria pertama tidak lolos (nama tidak diisi)
+  if (!firstCriteria) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Mohon isi nama buku',
+    });
+    response.code(400);
+    return response;
+  }
+
+  // apabila kriteria kedua tidak lolos (readPage lebih dari pageCount)
+  if (!secondCriteria) {
+    const response = h.response({
+      status: 'fail',
+      message:
+        'Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount',
+    });
+    response.code(400);
+    return response;
+  }
+
+  // apabila kriteria ketiga tidak lolos (id tidak ditemukan)
+  if (!thirdCriteria) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Id tidak ditemukan',
+    });
+    response.code(404);
+    return response;
+  }
+
+  // memperbarui data buku
+  booksInDetail[index] = {
+    ...booksInDetail[index],
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+    updatedAt,
+  };
+
+  const response = h.response({
+    status: 'success',
+    message: 'Buku berhasil diperbarui',
+  });
+  response.code(200);
+  return response;
+};
+
 module.exports = {
   storeBookHandler,
   getAllBooksHandler,
   getBookByIdHandler,
+  editBooksByIdHandler,
 };
