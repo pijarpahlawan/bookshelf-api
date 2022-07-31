@@ -1,5 +1,5 @@
 const { nanoid } = require('nanoid');
-const books = require('./books');
+const booksInDetail = require('./books');
 
 //* menambahkan buku
 const storeBookHandler = (request, h) => {
@@ -20,7 +20,7 @@ const storeBookHandler = (request, h) => {
    */
   function getId() {
     const idObtained = nanoid(24);
-    if (books.find((book) => book.id === idObtained)) {
+    if (booksInDetail.find((book) => book.id === idObtained)) {
       getId();
     }
     return idObtained;
@@ -71,9 +71,9 @@ const storeBookHandler = (request, h) => {
     return response;
   }
 
-  books.push(newBook);
+  booksInDetail.push(newBook);
 
-  const isSuccess = books.find((book) => book.id === id);
+  const isSuccess = booksInDetail.find((book) => book.id === id);
 
   if (isSuccess) {
     const response = h.response({
@@ -96,6 +96,33 @@ const storeBookHandler = (request, h) => {
   return response;
 };
 
+const getAllBooksHandler = (h) => {
+  function keepParams({
+    year,
+    author,
+    summary,
+    pageCount,
+    readPage,
+    finished,
+    reading,
+    insertedAt,
+    updatedAt,
+    ...keep
+  }) {
+    return keep;
+  }
+
+  const books = booksInDetail.map(keepParams);
+
+  const response = h.response({
+    status: 'success',
+    data: { books },
+  });
+
+  return response;
+};
+
 module.exports = {
   storeBookHandler,
+  getAllBooksHandler,
 };
