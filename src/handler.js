@@ -16,7 +16,7 @@ const storeBookHandler = (request, h) => {
 
   /**
    * Membuat id buku
-   * @returns idObtained
+   * @returns id buku
    */
   function getId() {
     const idObtained = nanoid(24);
@@ -46,11 +46,11 @@ const storeBookHandler = (request, h) => {
     updatedAt,
   };
 
-  //* membuat kriteria lolos uji
+  // membuat kriteria lolos uji
   const firstCriteria = name !== undefined;
   const secondCriteria = readPage <= pageCount;
 
-  //* apabila kriteria pertama tidak lolos (nama tidak diisi)
+  // apabila kriteria pertama tidak lolos (nama tidak diisi)
   if (!firstCriteria) {
     const response = h.response({
       status: 'fail',
@@ -60,7 +60,7 @@ const storeBookHandler = (request, h) => {
     return response;
   }
 
-  //* apabila kriteria kedua tidak lolos (readPage lebih dari pageCount)
+  // apabila kriteria kedua tidak lolos (readPage lebih dari pageCount)
   if (!secondCriteria) {
     const response = h.response({
       status: 'fail',
@@ -87,7 +87,7 @@ const storeBookHandler = (request, h) => {
     return response;
   }
 
-  //* apabila terdapat kesalahan server internal
+  // apabila terdapat kesalahan server internal
   const response = h.response({
     status: 'error',
     message: 'Buku gagal ditambahkan',
@@ -96,7 +96,13 @@ const storeBookHandler = (request, h) => {
   return response;
 };
 
-const getAllBooksHandler = (h) => {
+//* mendapatkan semua buku
+const getAllBooksHandler = (request, h) => {
+  /**
+   * Menghilangkan properti selain id, name, dan publisher
+   * @param {*} buku detail buku
+   * @returns sisa properti yang dibutuhkan
+   */
   function keepParams({
     year,
     author,
@@ -112,17 +118,41 @@ const getAllBooksHandler = (h) => {
     return keep;
   }
 
+  // array buku yang baru dengan properti id, name, dan publisher
   const books = booksInDetail.map(keepParams);
 
   const response = h.response({
     status: 'success',
     data: { books },
   });
+  return response;
+};
 
+//* menampilkan detail buku
+const getBookByIdHandler = (request, h) => {
+  const { bookId } = request.params;
+  const book = booksInDetail.find((b) => b.id === bookId);
+
+  if (book !== undefined) {
+    return {
+      status: 'success',
+      data: {
+        book,
+      },
+    };
+  }
+
+  // apabila buku tidak ditemukan
+  const response = h.response({
+    status: 'fail',
+    message: 'Buku tidak ditemukan',
+  });
+  response.code(404);
   return response;
 };
 
 module.exports = {
   storeBookHandler,
   getAllBooksHandler,
+  getBookByIdHandler,
 };
