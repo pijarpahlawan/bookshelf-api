@@ -99,7 +99,7 @@ const storeBookHandler = (request, h) => {
 //* mendapatkan semua buku
 const getAllBooksHandler = (request, h) => {
   /**
-   * Menghilangkan properti selain id, name, dan publisher
+   * Menjaga properti id, name, dan publisher dan menghilangkan property lainnya
    * @param {*} buku detail buku
    * @returns sisa properti yang dibutuhkan
    */
@@ -119,11 +119,33 @@ const getAllBooksHandler = (request, h) => {
   }
 
   // array buku yang baru dengan properti id, name, dan publisher
-  const books = booksInDetail.map(keepParams);
+  let books = booksInDetail.map(keepParams);
+
+  // filtering response sesuai dengan query yang diminta
+  let { name, reading, finished } = request.query;
+
+  if (name !== undefined) {
+    name = name.toLowerCase();
+    books = booksInDetail
+      .filter((book) => book.name.toLowerCase().includes(name))
+      .map(keepParams);
+  } else if (reading === '1' || reading === '0') {
+    reading = reading === '1';
+    books = booksInDetail
+      .filter((book) => book.reading === reading)
+      .map(keepParams);
+  } else if (finished === '1' || finished === '0') {
+    finished = finished === '1';
+    books = booksInDetail
+      .filter((book) => book.finished === finished)
+      .map(keepParams);
+  }
 
   const response = h.response({
     status: 'success',
-    data: { books },
+    data: {
+      books,
+    },
   });
   response.code(200);
   return response;
